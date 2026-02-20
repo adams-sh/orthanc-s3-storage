@@ -4,6 +4,24 @@ Orthanc plugin providing AWS S3 and S3-compatible storage capabilities.
 
 # Instruction, how to build the plugin
 
+## macOS Sequoia (native build)
+
+Install prerequisites via [Homebrew](https://brew.sh):
+
+```sh
+brew install cmake openssl curl zlib mercurial
+```
+
+Then build the plugin natively:
+
+```sh
+scripts/build-macos.sh
+```
+
+The compiled plugin (`libOrthancS3StoragePlugin.dylib`) will be placed in the `install` directory.
+
+## Linux (Docker build)
+
   - use a script provided with the repository inside `scripts/docker-build-orthanc`
     folder (please note, do it even if you want to build it natively, without
     Docker!)

@@ -19,7 +19,8 @@ else()
     set(ORTHANC_FRAMEWORK_DEFAULT_SOURCE "web")
 endif()
 
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_FLAGS_DEBUG "-g")
 #Json Reader class is deprecated in Orthanc code
 #Who cares about unused functions :P and default: in switch...
@@ -27,6 +28,11 @@ set(CMAKE_CXX_FLAGS "-Wno-switch-default -Wno-unused-function -Wno-deprecated-de
 
 if (APPLE)
     set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -stdlib=libc++")
+    # Set minimum macOS deployment target to Sequoia (15.0); override with
+    # -DCMAKE_OSX_DEPLOYMENT_TARGET=<version> to support older macOS releases.
+    if (NOT CMAKE_OSX_DEPLOYMENT_TARGET)
+        set(CMAKE_OSX_DEPLOYMENT_TARGET "15.0" CACHE STRING "Minimum macOS deployment version")
+    endif()
 endif (APPLE)
 
 set(JSONCPP_CXX11 ON) #TODO: does this work?
@@ -109,7 +115,12 @@ add_definitions(
 #make the installed rpath able to reach aws shared libs
 set(CMAKE_MACOSX_RPATH 1)
 set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
-set(CMAKE_INSTALL_RPATH "$ORIGIN/../aws/lib")
+if (APPLE)
+    # macOS uses @loader_path instead of $ORIGIN
+    set(CMAKE_INSTALL_RPATH "@loader_path/../aws/lib")
+else()
+    set(CMAKE_INSTALL_RPATH "$ORIGIN/../aws/lib")
+endif()
 
 #workaround of sorts for missing symbol we're using and they don't
 if (NOT USE_SYSTEM_BOOST)

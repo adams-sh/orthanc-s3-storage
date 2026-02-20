@@ -2,18 +2,14 @@ set(USE_SYSTEM_AWS_SDK OFF CACHE BOOL "Use the system version of AWS SDK")
 
 if (NOT USE_SYSTEM_AWS_SDK)
     message("Getting AWS SDK from the web...")
-    SET(AWS_SDK_VERSION "")
+    SET(AWS_SDK_VERSION "1.11.390")
     SET(AWS_SDK_SOURCES_DIR ${CMAKE_BINARY_DIR}/aws-sdk-cpp-${AWS_SDK_VERSION})
     SET(AWS_SDK_BINARY_DIR ${CMAKE_BINARY_DIR}/aws-sdk-cpp-${AWS_SDK_VERSION}-build)
     SET(AWS_SDK_INSTALL_DIR ${CMAKE_INSTALL_PREFIX}/share/orthanc/aws)
 
-    #SET(AWS_SDK_URL "https://github.com/aws/aws-sdk-cpp/archive/1.4.70.tar.gz")
-    #SET(AWS_SDK_MD5 "d41d8cd98f00b204e9800998ecf8427e")
     SET(AWS_SDK_GIT_REPO "https://github.com/aws/aws-sdk-cpp.git")
     SET(AWS_SDK_GIT_TAG "${AWS_SDK_VERSION}")
 
-    #file(MAKE_DIRECTORY ${AWS_SDK_BINARY_DIR})
-    
     # There is an issue with static build because aws libs 
     # are adding libcurl libz and libssl from the system
     # A solution would be to eitherr add here the sources directly
@@ -28,11 +24,16 @@ if (NOT USE_SYSTEM_AWS_SDK)
     set(EXTERNAL_CXX_FLAGS "-Wno-unused-private-field")
     set(EXTERNAL_C_FLAGS "")
 
+    set(AWS_SDK_EXTRA_CMAKE_ARGS "")
+    if (APPLE)
+        list(APPEND AWS_SDK_EXTRA_CMAKE_ARGS
+            -DCMAKE_OSX_DEPLOYMENT_TARGET=${CMAKE_OSX_DEPLOYMENT_TARGET}
+        )
+    endif()
+
     ExternalProject_Add(aws-cpp-sdk
         SOURCE_DIR ${AWS_SDK_SOURCES_DIR}
         BINARY_DIR ${AWS_SDK_BINARY_DIR}
-        #URL ${AWS_SDK_URL}
-        #URL_HASH "MD5=${AWS_SDK_MD5}"
         GIT_REPOSITORY "${AWS_SDK_GIT_REPO}"
         GIT_TAG "${AWS_SDK_GIT_TAG}"
         CMAKE_ARGS
@@ -44,15 +45,7 @@ if (NOT USE_SYSTEM_AWS_SDK)
         -DBUILD_SHARED_LIBS=${AWS_SDK_SHARED}
         -DBUILD_ONLY=transfer;s3
         -DAUTORUN_UNIT_TESTS=OFF
-        #GIT_PROGRESS "ON"
-        #TODO enable tests again once the issue is fixed and the pull request is accepted:
-        #https://github.com/aws/aws-sdk-cpp/issues/1010
-        #https://github.com/aws/aws-sdk-cpp/pull/1033
-        #https://github.com/ploki/aws-sdk-cpp/commit/c5aa6ec225cb9f77793654e5334ee49faa6e1ae2
-        #-DSIMPLE_INSTALL="ON"
-        #-DNO_HTTP_CLIENT="ON"
-        #-DNO_ENCRYPTION="ON"
-        #-DFORCE_CURL="ON"
+        ${AWS_SDK_EXTRA_CMAKE_ARGS}
     )
 
     include_directories(${AWS_SDK_INSTALL_DIR}/include)
