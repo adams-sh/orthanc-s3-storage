@@ -4,3 +4,4 @@ install
 install-*/*
 ThirdPartyDownloads
 CMakeLists.txt.user
+_codeql_detected_source_root

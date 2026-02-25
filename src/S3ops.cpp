@@ -86,7 +86,11 @@ bool S3Impl::ConfigureAwsSdk(const std::string& s3_access_key,
     aws_client_config.scheme = Aws::Http::Scheme::HTTPS;
     aws_client_config.connectTimeoutMs = 30000;
     aws_client_config.requestTimeoutMs = 600000;
+#ifdef __APPLE__
+    aws_client_config.caFile = Aws::String("/etc/ssl/cert.pem");
+#else
     aws_client_config.caPath = Aws::String("/etc/ssl/certs/");
+#endif
     if (!s3_endpoint.empty()) {
         aws_client_config.endpointOverride = s3_endpoint;
         const std::string protocol = extractUrlProtocol(s3_endpoint);
